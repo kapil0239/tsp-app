@@ -7,6 +7,14 @@ on:
       - 'terraform/**'
   workflow_dispatch:
 
+
+env:
+  TF_BACKEND_RG: POC-Kapil
+  TF_BACKEND_SA: tspsa01567rytg
+  TF_BACKEND_CONTAINER: infra
+  TF_BACKEND_KEY: be/terraform.tfstate
+
+
 jobs:
   terraform:
     runs-on: ubuntu-latest
@@ -21,9 +29,20 @@ jobs:
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
           
+      # - name: Terraform Init
+      #   working-directory: ./terraform
+      #   run: terraform init
+
+
       - name: Terraform Init
-        working-directory: ./terraform
-        run: terraform init
+        working-directory: infra
+        run: |
+          terraform init \
+            -backend-config="resource_group_name=${TF_BACKEND_RG}" \
+            -backend-config="storage_account_name=${TF_BACKEND_SA}" \
+            -backend-config="container_name=${TF_BACKEND_CONTAINER}" \
+            -backend-config="key=${TF_BACKEND_KEY}"
+
         
       - name: Terraform Plan
         working-directory: ./terraform

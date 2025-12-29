@@ -11,7 +11,7 @@ on:
 env:
   TF_BACKEND_RG: POC-Kapil
   TF_BACKEND_SA: tspsa01567rytg
-  TF_BACKEND_CONTAINER: infra
+  TF_BACKEND_CONTAINER: tfstate
   TF_BACKEND_KEY: be/terraform.tfstate
 
 

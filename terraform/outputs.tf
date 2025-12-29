@@ -42,9 +42,9 @@ output "aks_get_credentials_command" {
   value = "az aks get-credentials --resource-group ${azurerm_resource_group.main.name} --name ${azurerm_kubernetes_cluster.main.name}"
 }
 
-output "sql_server_fqdn" {
-  value = azurerm_private_endpoint.sql.private_service_connection[0].private_ip_address
-}
+# output "sql_server_fqdn" {
+#   value = azurerm_private_endpoint.sql.private_service_connection[0].private_ip_address
+# }
 
 
 output "acr_name" {

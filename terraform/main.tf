@@ -176,4 +176,25 @@ resource "random_string" "suffix" {
 
 
 
+# ----------------------------
+# Azure Container Registry
+# ----------------------------
+resource "azurerm_container_registry" "acr" {
+  name                = "acrtsp${var.environment}${random_string.suffix.result}" # alphanumeric only
+  resource_group_name = azurerm_resource_group.main.name
+  location            = azurerm_resource_group.main.location
+  sku                 = var.acr_sku
+  admin_enabled       = var.acr_admin_enabled
+}
+
+# ---------------------------------------------------------
+# Grant AKS (kubelet identity) permission to pull from ACR
+# ---------------------------------------------------------
+resource "azurerm_role_assignment" "aks_acr_pull" {
+  scope                            = azurerm_container_registry.acr.id
+  role_definition_name             = "AcrPull"
+  principal_id                     = azurerm_kubernetes_cluster.main.kubelet_identity[0].object_id
+  skip_service_principal_aad_check = true
+}
+
 

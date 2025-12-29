@@ -13,7 +13,8 @@ variable "environment" {
 variable "sql_admin_password" {
   description = "SQL Server administrator password"
   type        = string
-  sensitive   = true
+  #sensitive   = true
+  default = "adminutgji89123!@#"
 }
 
 variable "aks_node_count" {

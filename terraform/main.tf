@@ -1,39 +1,3 @@
-terraform {
-  required_version = ">= 1.0"
-  required_providers {
-    azurerm = {
-      source  = "hashicorp/azurerm"
-      version = "~> 3.0"
-    }
-    azuread = {
-      source  = "hashicorp/azuread"
-      version = "~> 2.0"
-    }
-  }
-}
-
-provider "azurerm" {
-  features {
-    key_vault {
-      purge_soft_delete_on_destroy = true
-    }
-  }
-}
-
-# Variables
-variable "location" {
-  default = "East US"
-}
-
-variable "environment" {
-  default = "dev"
-}
-
-variable "sql_admin_password" {
-  sensitive = true
-  type      = string
-}
-
 # Resource Group
 resource "azurerm_resource_group" "main" {
   name     = "rg-3tier-${var.environment}"

@@ -25,7 +25,7 @@ spec:
     spec:
       containers:
       - name: backend-api
-        image: YOUR_ACR_NAME.azurecr.io/backend-api:latest  # Replace with your ACR name
+        image: acrtspdevdt0821.azurecr.io/backend-api:latest  # Replace with your ACR name
         imagePullPolicy: Always
         ports:
         - name: http

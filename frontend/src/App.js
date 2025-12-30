@@ -5,7 +5,7 @@ function App() {
   return (
     <div className="App">
       <header className="App-header">
-        <h1>Task Manager - Azure 3-Tier App</h1>
+        <h1>Task Manager - Hello from Azure </h1>
         <p>Frontend application is running.</p>
       </header>
     </div>

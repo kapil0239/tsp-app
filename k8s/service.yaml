@@ -6,9 +6,8 @@ metadata:
   labels:
     app: backend-api
     tier: backend
-  annotations:
-    service.beta.kubernetes.io/azure-load-balancer-internal: "true"
-    service.beta.kubernetes.io/azure-load-balancer-internal-subnet: "snet-aks"
+  # Removed internal annotation to make service publicly accessible
+  # For production, consider using VNet integration instead
 spec:
   type: LoadBalancer
   selector:

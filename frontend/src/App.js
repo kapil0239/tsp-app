@@ -35,6 +35,9 @@ function App() {
   const createTask = async (e) => {
     e.preventDefault();
     try {
+      console.log('Creating task with URL:', `${API_URL}/api/tasks`);
+      console.log('Request body:', newTask);
+      
       const response = await fetch(`${API_URL}/api/tasks`, {
         method: 'POST',
         headers: {
@@ -42,15 +45,24 @@ function App() {
         },
         body: JSON.stringify(newTask),
       });
+      
+      console.log('Response status:', response.status);
+      console.log('Response headers:', response.headers);
+      
       if (!response.ok) {
-        throw new Error('Failed to create task');
+        const errorText = await response.text();
+        console.error('Error response:', errorText);
+        throw new Error(`HTTP ${response.status}: ${errorText || 'Failed to create task'}`);
       }
+      
       const task = await response.json();
       setTasks([task, ...tasks]);
       setNewTask({ title: '', description: '' });
+      setError(null);
     } catch (err) {
       console.error('Error creating task:', err);
-      setError(`Failed to create task: ${err.message}`);
+      const errorMsg = err.message || 'Failed to create task';
+      setError(`Failed to create task: ${errorMsg}. API URL: ${API_URL}`);
     }
   };
 
@@ -63,9 +75,31 @@ function App() {
         throw new Error('Failed to delete task');
       }
       setTasks(tasks.filter(task => task.id !== id));
+      setError(null);
     } catch (err) {
       console.error('Error deleting task:', err);
       setError(`Failed to delete task: ${err.message}`);
+    }
+  };
+
+  const testConnection = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      console.log('Testing connection to:', `${API_URL}/health`);
+      const response = await fetch(`${API_URL}/health`);
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}`);
+      }
+      const data = await response.json();
+      console.log('Health check response:', data);
+      setError(`✅ Connection successful! Backend is healthy.`);
+      setTimeout(() => setError(null), 3000);
+    } catch (err) {
+      console.error('Connection test failed:', err);
+      setError(`❌ Connection failed: ${err.message}. Check if backend is accessible at ${API_URL}`);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -73,14 +107,24 @@ function App() {
     <div className="App">
       <header className="App-header">
         <h1>Task Manager - Azure 3-Tier App</h1>
-        <p>Backend API: {API_URL}</p>
+        <div style={{ fontSize: '14px', marginBottom: '10px', color: '#aaa' }}>
+          <p>Backend API URL: <code>{API_URL}</code></p>
+          <p>Current URL: <code>{window.location.origin}</code></p>
+        </div>
         
         {error && (
           <div className="error-message">
             <p>⚠️ {error}</p>
-            <button onClick={fetchTasks}>Retry</button>
+            <div style={{ display: 'flex', gap: '10px', justifyContent: 'center', marginTop: '10px' }}>
+              <button onClick={testConnection}>Test Connection</button>
+              <button onClick={fetchTasks}>Retry Fetch</button>
+            </div>
           </div>
         )}
+        
+        <button onClick={testConnection} style={{ marginBottom: '20px', padding: '10px 20px' }}>
+          Test Backend Connection
+        </button>
 
         <div className="task-form">
           <h2>Create New Task</h2>

@@ -95,6 +95,15 @@ jobs:
           
       - name: Prepare Deployment Package
         run: |
+          # Update index.html with the correct API URL (inject into script tag)
+          echo "Updating API URL in index.html to: ${{ env.REACT_APP_API_URL }}"
+          if [ -f ./frontend/build/index.html ]; then
+            # Replace the API URL in the script tag
+            sed -i.bak "s|window.REACT_APP_API_URL = window.REACT_APP_API_URL || '[^']*';|window.REACT_APP_API_URL = window.REACT_APP_API_URL || '${{ env.REACT_APP_API_URL }}';|g" ./frontend/build/index.html
+            rm -f ./frontend/build/index.html.bak
+            echo "✓ Updated index.html with API URL: ${{ env.REACT_APP_API_URL }}"
+          fi
+          
           # Copy server.js and package.json to build directory
           cp ./frontend/server.js ./frontend/build/
           cp ./frontend/package.json ./frontend/build/

@@ -1,7 +1,18 @@
 import React, { useState, useEffect } from 'react';
 import './App.css';
 
-const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:3001';
+// Get API URL from environment variable (set at build time) or from window config (runtime)
+// This allows updating the API URL without rebuilding
+const getApiUrl = () => {
+  // Check if there's a runtime config (useful for updating without rebuild)
+  if (window.REACT_APP_API_URL) {
+    return window.REACT_APP_API_URL;
+  }
+  // Fall back to build-time env var
+  return process.env.REACT_APP_API_URL || 'http://localhost:3001';
+};
+
+const API_URL = getApiUrl();
 
 function App() {
   const [tasks, setTasks] = useState([]);

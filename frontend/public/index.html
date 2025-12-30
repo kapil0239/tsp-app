@@ -8,7 +8,13 @@
     <meta name="description" content="Azure 3-Tier Task Manager" />
     <link rel="apple-touch-icon" href="%PUBLIC_URL%/logo192.png" />
     <link rel="manifest" href="%PUBLIC_URL%/manifest.json" />
-    <title>Task Manager - Hello from Azure </title>
+    <title>Task Manager - Azure 3-Tier App</title>
+    <script>
+      // Runtime API URL configuration - can be updated without rebuilding
+      // This will be set by the deployment process or can be manually updated
+      // Update this IP when backend service IP changes
+      window.REACT_APP_API_URL = window.REACT_APP_API_URL || 'http://52.160.32.57:80';
+    </script>
   </head>
   <body>
     <noscript>You need to enable JavaScript to run this app.</noscript>

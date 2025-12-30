@@ -40,3 +40,4 @@ app.listen(port, '0.0.0.0', () => {
   console.log(`📁 Serving files from: ${__dirname}`);
   console.log(`🌐 Application is ready!`);
 });
+

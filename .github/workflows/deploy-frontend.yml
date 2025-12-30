@@ -29,9 +29,39 @@ jobs:
           npm install
           npm run build
           
+      - name: Prepare Deployment Package
+        run: |
+          # Copy server.js and package.json to build directory
+          cp ./frontend/server.js ./frontend/build/
+          cp ./frontend/package.json ./frontend/build/
+          
+          # Create a minimal package.json for production (only express)
+          cat > ./frontend/build/package.json << EOF
+          {
+            "name": "tsp-frontend",
+            "version": "1.0.0",
+            "main": "server.js",
+            "scripts": {
+              "start": "node server.js"
+            },
+            "dependencies": {
+              "express": "^4.18.2"
+            }
+          }
+          EOF
+          
+          echo "📦 Deployment package contents:"
+          ls -la ./frontend/build/ | head -20
+          echo ""
+          echo "📄 Checking for required files:"
+          ls -la ./frontend/build/index.html && echo "✓ index.html found"
+          ls -la ./frontend/build/server.js && echo "✓ server.js found"
+          ls -la ./frontend/build/package.json && echo "✓ package.json found"
+          
       - name: Deploy to Azure Web App
         uses: azure/webapps-deploy@v2
         with:
           app-name: ${{ secrets.WEBAPP_NAME }}
           publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
           package: ./frontend/build
+          startup-command: 'npm install --production && npm start'

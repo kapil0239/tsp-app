@@ -96,12 +96,60 @@ jobs:
       - name: Prepare Deployment Package
         run: |
           # Update index.html with the correct API URL (inject into script tag)
-          echo "Updating API URL in index.html to: ${{ env.REACT_APP_API_URL }}"
+          API_URL="${{ env.REACT_APP_API_URL }}"
+          echo "Updating API URL in index.html to: $API_URL"
+          
           if [ -f ./frontend/build/index.html ]; then
-            # Replace the API URL in the script tag
-            sed -i.bak "s|window.REACT_APP_API_URL = window.REACT_APP_API_URL || '[^']*';|window.REACT_APP_API_URL = window.REACT_APP_API_URL || '${{ env.REACT_APP_API_URL }}';|g" ./frontend/build/index.html
-            rm -f ./frontend/build/index.html.bak
-            echo "✓ Updated index.html with API URL: ${{ env.REACT_APP_API_URL }}"
+            # Use Python to safely replace the URL (handles special characters better)
+            python3 << EOF
+import re
+import sys
+
+api_url = "$API_URL"
+file_path = "./frontend/build/index.html"
+
+try:
+    with open(file_path, 'r', encoding='utf-8') as f:
+        content = f.read()
+    
+    # Replace the API URL in the script tag
+    # Pattern: window.REACT_APP_API_URL = window.REACT_APP_API_URL || 'old_url';
+    pattern = r"window\.REACT_APP_API_URL = window\.REACT_APP_API_URL \|\| '[^']*';"
+    replacement = f"window.REACT_APP_API_URL = window.REACT_APP_API_URL || '{api_url}';"
+    
+    new_content = re.sub(pattern, replacement, content)
+    
+    if new_content != content:
+        with open(file_path, 'w', encoding='utf-8') as f:
+            f.write(new_content)
+        print(f"✓ Successfully updated index.html with API URL: {api_url}")
+    else:
+        # If pattern not found, try to add it before </head>
+        if "REACT_APP_API_URL" not in content:
+            script_tag = f"    <script>\n      window.REACT_APP_API_URL = window.REACT_APP_API_URL || '{api_url}';\n    </script>\n"
+            new_content = content.replace("</head>", script_tag + "  </head>")
+            with open(file_path, 'w', encoding='utf-8') as f:
+                f.write(new_content)
+            print(f"✓ Added API URL script tag to index.html: {api_url}")
+        else:
+            print("⚠️ Pattern found but no replacement made. Current content:")
+            import re
+            match = re.search(r"REACT_APP_API_URL.*?;", content)
+            if match:
+                print(f"  Found: {match.group()}")
+except Exception as e:
+    print(f"Error updating index.html: {e}")
+    sys.exit(1)
+EOF
+            
+            # Verify the change
+            if grep -q "$API_URL" ./frontend/build/index.html; then
+              echo "✓ Verified: API URL is in index.html"
+            else
+              echo "⚠️ Warning: Could not verify API URL update"
+            fi
+          else
+            echo "⚠️ Warning: index.html not found in build directory"
           fi
           
           # Copy server.js and package.json to build directory

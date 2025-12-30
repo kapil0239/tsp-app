@@ -36,25 +36,53 @@ jobs:
       - name: Get Backend Service URL
         id: get-backend-url
         run: |
-          # Get the backend service IP
-          BACKEND_IP=$(kubectl get svc backend-api-service -n tsp-app -o jsonpath='{.status.loadBalancer.ingress[0].ip}' 2>/dev/null || echo "")
+          echo "Checking backend service status..."
+          kubectl get svc backend-api-service -n tsp-app
           
-          if [ -z "$BACKEND_IP" ]; then
-            # If no external IP, try to get the service cluster IP or use the service DNS name
-            BACKEND_IP=$(kubectl get svc backend-api-service -n tsp-app -o jsonpath='{.spec.clusterIP}' 2>/dev/null || echo "")
+          # Wait for LoadBalancer to get an external IP (max 2 minutes)
+          echo "Waiting for LoadBalancer to get external IP..."
+          for i in {1..24}; do
+            BACKEND_IP=$(kubectl get svc backend-api-service -n tsp-app -o jsonpath='{.status.loadBalancer.ingress[0].ip}' 2>/dev/null || echo "")
+            
+            if [ -n "$BACKEND_IP" ]; then
+              # Check if it's a public IP (not in private ranges)
+              if [[ ! "$BACKEND_IP" =~ ^10\. ]] && [[ ! "$BACKEND_IP" =~ ^172\.(1[6-9]|2[0-9]|3[01])\. ]] && [[ ! "$BACKEND_IP" =~ ^192\.168\. ]]; then
+                echo "✓ Found public IP: $BACKEND_IP"
+                BACKEND_URL="http://${BACKEND_IP}:80"
+                break
+              else
+                echo "⚠ Found private IP: $BACKEND_IP (waiting for public IP...)"
+              fi
+            fi
+            
+            if [ $i -lt 24 ]; then
+              sleep 5
+            fi
+          done
+          
+          # If still no public IP, check service annotations
+          if [ -z "$BACKEND_URL" ] || [[ "$BACKEND_IP" =~ ^172\. ]] || [[ "$BACKEND_IP" =~ ^10\. ]] || [[ "$BACKEND_IP" =~ ^192\.168\. ]]; then
+            echo "⚠️ Warning: Service appears to be internal or no public IP assigned"
+            echo "Checking service annotations..."
+            kubectl get svc backend-api-service -n tsp-app -o yaml | grep -i internal || echo "No internal annotation found"
+            
+            # Try to get the IP anyway (might work with VNet integration)
             if [ -n "$BACKEND_IP" ]; then
               BACKEND_URL="http://${BACKEND_IP}:80"
+              echo "⚠️ Using IP: $BACKEND_IP (may require VNet integration)"
             else
-              # Use service DNS name as fallback
-              BACKEND_URL="http://backend-api-service.tsp-app.svc.cluster.local:80"
+              echo "❌ Error: No backend IP found. Please ensure the service is configured as public LoadBalancer."
+              exit 1
             fi
-          else
-            BACKEND_URL="http://${BACKEND_IP}:80"
           fi
           
           echo "Backend URL: $BACKEND_URL"
           echo "REACT_APP_API_URL=$BACKEND_URL" >> $GITHUB_ENV
           echo "backend_url=$BACKEND_URL" >> $GITHUB_OUTPUT
+          
+          # Test connectivity
+          echo "Testing backend connectivity..."
+          curl -f "${BACKEND_URL}/health" && echo "✓ Backend is reachable" || echo "⚠️ Backend health check failed (may still work)"
           
       - name: Build
         working-directory: ./frontend

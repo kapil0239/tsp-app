@@ -42,6 +42,13 @@ jobs:
           kubectl apply -f k8s/namespace.yaml
           kubectl apply -f k8s/configmap.yaml
           
+          # Ensure service is public (remove internal annotation if exists)
+          echo "Ensuring backend service is public..."
+          kubectl annotate svc backend-api-service -n tsp-app \
+            service.beta.kubernetes.io/azure-load-balancer-internal- || true
+          kubectl annotate svc backend-api-service -n tsp-app \
+            service.beta.kubernetes.io/azure-load-balancer-internal-subnet- || true
+          
           # Create or update secret with SQL server FQDN
           # Use SQL_SERVER secret if provided, otherwise construct from SQL_SERVER_NAME
           if [ -n "${{ secrets.SQL_SERVER }}" ]; then
@@ -69,6 +76,25 @@ jobs:
           
           # Apply service
           kubectl apply -f k8s/service.yaml
+          
+          # Remove internal annotation to make service public (if it exists)
+          echo "Ensuring service is public..."
+          # Check if internal annotation exists and remove it
+          if kubectl get svc backend-api-service -n tsp-app -o jsonpath='{.metadata.annotations.service\.beta\.kubernetes\.io/azure-load-balancer-internal}' 2>/dev/null | grep -q "true"; then
+            echo "Removing internal annotation from service..."
+            kubectl patch svc backend-api-service -n tsp-app --type='json' -p='[{"op": "remove", "path": "/metadata/annotations/service.beta.kubernetes.io~1azure-load-balancer-internal"}]' || true
+            kubectl patch svc backend-api-service -n tsp-app --type='json' -p='[{"op": "remove", "path": "/metadata/annotations/service.beta.kubernetes.io~1azure-load-balancer-internal-subnet"}]' || true
+            echo "Service updated. It may take a few minutes for Azure to provision a public IP."
+          else
+            echo "Service is already configured as public."
+          fi
+          
+          # Wait a moment for annotation removal to take effect
+          sleep 5
+          
+          # Show service status
+          echo "Service status:"
+          kubectl get svc backend-api-service -n tsp-app
           
           # Apply deployment (update image reference if needed)
           sed "s|acrtspdevdt0821.azurecr.io/backend-api:latest|${{ secrets.ACR_NAME }}.azurecr.io/backend-api:latest|g" k8s/deployment.yaml | \

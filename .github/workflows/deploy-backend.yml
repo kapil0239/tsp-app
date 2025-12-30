@@ -25,7 +25,11 @@ jobs:
             --image backend-api:${{ github.sha }} \
             --file backend/Dockerfile \
             backend/
-            
+
+      - name: Create Namespace
+        run: |
+          kubectl create namespace tsp-app
+
       - name: Deploy to AKS
         run: |
           az aks get-credentials \
@@ -33,6 +37,6 @@ jobs:
             --name ${{ secrets.AKS_NAME }}
           kubectl set image deployment/backend-api \
             backend-api=${{ secrets.ACR_NAME }}.azurecr.io/backend-api:${{ github.sha }} \
-            -n three-tier-app
+            -n tsp-app
 
             

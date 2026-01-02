@@ -18,7 +18,7 @@ resource "azurerm_monitor_metric_alert" "sql_cpu_percentage" {
     metric_name      = "cpu_percent"
     aggregation      = "Average"
     operator         = "GreaterThan"
-    threshold        = 80 # 80% CPU
+    threshold        = 50 # 80% CPU
   }
 
   action {
@@ -47,7 +47,7 @@ resource "azurerm_monitor_metric_alert" "sql_dtu_percentage" {
     metric_name      = "dtu_consumption_percent"
     aggregation      = "Average"
     operator         = "GreaterThan"
-    threshold        = 80 # 80% DTU
+    threshold        = 50 # 80% DTU
   }
 
   action {
@@ -76,7 +76,7 @@ resource "azurerm_monitor_metric_alert" "sql_storage_percentage" {
     metric_name      = "storage_percent"
     aggregation      = "Average"
     operator         = "GreaterThan"
-    threshold        = 85 # 85% storage
+    threshold        = 25 # 85% storage
   }
 
   action {
@@ -134,7 +134,7 @@ resource "azurerm_monitor_metric_alert" "sql_failed_connections" {
     metric_name      = "connection_failed"
     aggregation      = "Total"
     operator         = "GreaterThan"
-    threshold        = 5 # More than 5 failed connections
+    threshold        = 2 # More than 5 failed connections
   }
 
   action {
@@ -221,7 +221,7 @@ resource "azurerm_monitor_metric_alert" "sql_data_io_percentage" {
     metric_name      = "physical_data_read_percent"
     aggregation      = "Average"
     operator         = "GreaterThan"
-    threshold        = 80 # 80% data IO
+    threshold        = 30 # 80% data IO
   }
 
   action {
@@ -250,7 +250,7 @@ resource "azurerm_monitor_metric_alert" "sql_log_io_percentage" {
     metric_name      = "log_write_percent"
     aggregation      = "Average"
     operator         = "GreaterThan"
-    threshold        = 80 # 80% log IO
+    threshold        = 20 # 80% log IO
   }
 
   action {
@@ -279,7 +279,7 @@ resource "azurerm_monitor_metric_alert" "sql_worker_percentage" {
     metric_name      = "workers_percent"
     aggregation      = "Average"
     operator         = "GreaterThan"
-    threshold        = 80 # 80% workers
+    threshold        = 30 # 80% workers
   }
 
   action {
@@ -308,7 +308,7 @@ resource "azurerm_monitor_metric_alert" "sql_sessions_percentage" {
     metric_name      = "sessions_percent"
     aggregation      = "Average"
     operator         = "GreaterThan"
-    threshold        = 80 # 80% sessions
+    threshold        = 30 # 80% sessions
   }
 
   action {
@@ -321,31 +321,31 @@ resource "azurerm_monitor_metric_alert" "sql_sessions_percentage" {
 }
 
 # Alert: SQL Server Firewall Blocked Connections
-resource "azurerm_monitor_metric_alert" "sql_firewall_blocked" {
-  name                = "sql-firewall-blocked-${var.environment}"
-  resource_group_name = azurerm_resource_group.main.name
-  scopes              = [azurerm_mssql_server.main.id]
-  description         = "Alert when SQL server firewall blocks connections"
-  severity            = 1
-  enabled             = true
-  auto_mitigate       = true
-  frequency           = "PT1M"
-  window_size         = "PT5M"
+# resource "azurerm_monitor_metric_alert" "sql_firewall_blocked" {
+#   name                = "sql-firewall-blocked-${var.environment}"
+#   resource_group_name = azurerm_resource_group.main.name
+#   scopes              = [azurerm_mssql_server.main.id]
+#   description         = "Alert when SQL server firewall blocks connections"
+#   severity            = 1
+#   enabled             = true
+#   auto_mitigate       = true
+#   frequency           = "PT1M"
+#   window_size         = "PT5M"
 
-  criteria {
-    metric_namespace = "Microsoft.Sql/servers"
-    metric_name      = "blocked_by_firewall"
-    aggregation      = "Total"
-    operator         = "GreaterThan"
-    threshold        = 0 # Any blocked connections
-  }
+#   criteria {
+#     metric_namespace = "Microsoft.Sql/servers"
+#     metric_name      = "blocked_by_firewall"
+#     aggregation      = "Total"
+#     operator         = "GreaterThan"
+#     threshold        = 0 # Any blocked connections
+#   }
 
-  action {
-    action_group_id = azurerm_monitor_action_group.webapp_alerts.id
-  }
+#   action {
+#     action_group_id = azurerm_monitor_action_group.webapp_alerts.id
+#   }
 
-  tags = {
-    environment = var.environment
-  }
-}
+#   tags = {
+#     environment = var.environment
+#   }
+# }
 

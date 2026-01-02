@@ -147,6 +147,13 @@ resource "azurerm_kubernetes_cluster" "main" {
     dns_service_ip = "10.1.0.10"
   }
 
+
+  oms_agent {
+    #enabled                    = true
+    log_analytics_workspace_id = azurerm_log_analytics_workspace.main.id
+  }
+
+
 }
 
 # App Service Plan
@@ -234,4 +241,5 @@ resource "azurerm_log_analytics_workspace" "main" {
   resource_group_name = azurerm_resource_group.main.name
   sku                 = "PerGB2018"
   retention_in_days   = 30
+  daily_quota_gb      = 0.2
 }

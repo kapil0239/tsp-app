@@ -146,7 +146,7 @@ resource "azurerm_kubernetes_cluster" "main" {
     service_cidr   = "10.1.0.0/16"
     dns_service_ip = "10.1.0.10"
   }
-  
+
 }
 
 # App Service Plan
@@ -174,7 +174,11 @@ resource "azurerm_linux_web_app" "main" {
   }
 
   app_settings = {
-    "REACT_APP_API_URL" = "http://${azurerm_kubernetes_cluster.main.private_fqdn}"
+    "REACT_APP_API_URL"              = "http://${azurerm_kubernetes_cluster.main.private_fqdn}"
+    "SCM_DO_BUILD_DURING_DEPLOYMENT" = "true"
+    "WEBSITE_NODE_DEFAULT_VERSION"   = "18-lts"
+    "BACKEND_API_URL"                = "http://52.160.32.57:80"
+
   }
 
   #virtual_network_subnet_id = azurerm_subnet.webapp.id

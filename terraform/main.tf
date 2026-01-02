@@ -174,6 +174,15 @@ resource "azurerm_application_insights" "ai" {
   application_type  = "web"
   retention_in_days = 30
 
+  # Link to Log Analytics workspace
+  workspace_id = azurerm_log_analytics_workspace.main.id
+
+  # If you want to keep the existing workspace_id and not manage it via Terraform:
+  # Remove the workspace_id line above and uncomment the lifecycle block below
+  # lifecycle {
+  #   ignore_changes = [workspace_id]
+  # }
+
 }
 
 

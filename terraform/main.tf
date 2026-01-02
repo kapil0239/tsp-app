@@ -134,6 +134,7 @@ resource "azurerm_kubernetes_cluster" "main" {
     service_cidr   = "10.1.0.0/16"
     dns_service_ip = "10.1.0.10"
   }
+  
 }
 
 # App Service Plan
@@ -198,3 +199,10 @@ resource "azurerm_role_assignment" "aks_acr_pull" {
 }
 
 
+resource "azurerm_log_analytics_workspace" "main" {
+  name                = "log-analytics-tsp-${var.environment}"
+  location            = var.location
+  resource_group_name = azurerm_resource_group.main.name
+  sku                 = "PerGB2018"
+  retention_in_days   = 30
+}

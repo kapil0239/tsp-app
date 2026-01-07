@@ -24,7 +24,7 @@ function App() {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
       const data = await response.json();
-      setTaks(data);  // CHAOS: Deliberate typo - should be setTasks
+      setTasks(data);  // CHAOS: Deliberate typo - should be setTasks
       setError(null);
     } catch (err) {
       console.error('Error fetching tasks:', err);

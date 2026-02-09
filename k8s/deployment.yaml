@@ -67,6 +67,11 @@ spec:
             secretKeyRef:
               name: sql-secret
               key: SQL_SERVER
+        - name: OTEL_COLLECTOR_URL
+          valueFrom:
+            configMapKeyRef:
+              name: backend-config
+              key: OTEL_COLLECTOR_URL
         resources:
           requests:
             memory: "256Mi"

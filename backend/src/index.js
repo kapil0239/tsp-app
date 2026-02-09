@@ -14,6 +14,34 @@ app.use(cors({
   credentials: false
 }));
 
+// OTLP proxy must get raw body (protobuf or JSON); mount before express.json()
+const OTEL_COLLECTOR_URL = process.env.OTEL_COLLECTOR_URL || 'http://otel.monitoring.svc.cluster.local:4318';
+app.use('/api/otel', express.raw({ type: () => true, limit: '5mb' }), (req, res) => {
+  const path = req.path === '/' ? '' : req.path;
+  const target = `${OTEL_COLLECTOR_URL}${path}`;
+  const url = new URL(target);
+  const options = {
+    hostname: url.hostname,
+    port: url.port || 80,
+    path: url.pathname + (url.search || ''),
+    method: req.method,
+    headers: { ...req.headers, host: url.host },
+  };
+  delete options.headers['content-length'];
+  const proxyReq = require('http').request(options, (proxyRes) => {
+    res.writeHead(proxyRes.statusCode, proxyRes.headers);
+    proxyRes.pipe(res);
+  });
+  proxyReq.on('error', (err) => {
+    console.error('OTLP proxy error:', err.message);
+    res.status(502).json({ error: 'Collector unavailable' });
+  });
+  const body = req.body;
+  if (Buffer.isBuffer(body) && body.length) proxyReq.setHeader('Content-Length', body.length);
+  if (body && body.length) proxyReq.write(body);
+  proxyReq.end();
+});
+
 app.use(express.json());
 
 // Log all requests for debugging

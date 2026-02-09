@@ -24,4 +24,5 @@ cd tempo
 helm -n monitoring install tempo .
 ```
 cd ../otel
+
 helm -n monitoring install otel .

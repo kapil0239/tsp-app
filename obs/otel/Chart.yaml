@@ -1,0 +1,13 @@
+apiVersion: v2
+name: otel-collector
+description: OpenTelemetry Collector - receives OTLP/Jaeger and forwards traces to Tempo
+type: application
+version: 0.1.0
+appVersion: "0.112.0"
+keywords:
+  - opentelemetry
+  - otel
+  - tracing
+home: https://opentelemetry.io/docs/collector/
+sources:
+  - https://github.com/open-telemetry/opentelemetry-collector-contrib

@@ -1,0 +1,71 @@
+# -- Overrides the chart's name
+nameOverride: ""
+
+# -- Overrides the chart's computed fullname
+fullnameOverride: ""
+
+# -- Number of collector replicas
+replicas: 1
+
+# -- Collector image
+image:
+  repository: otel/opentelemetry-collector-contrib
+  tag: "0.112.0"
+  pullPolicy: IfNotPresent
+  # pullSecrets:
+  #   - myRegistryKeySecretName
+
+# -- Tempo backend: OTLP gRPC endpoint (used when forwarding traces)
+tempo:
+  # Service name and namespace where Tempo is installed
+  host: tempo.monitoring.svc.cluster.local
+  port: 4317
+  # Set to true if Tempo uses TLS
+  tlsInsecure: true
+
+# -- Collector config (advanced: override pipeline, receivers, processors)
+# If not set, defaults: OTLP + Jaeger receivers -> batch + memory_limiter -> otlp/tempo
+config:
+  # Leave empty to use built-in config. Set to a YAML string to replace the whole config.
+  # Example: |
+  #   receivers: ...
+  #   exporters: ...
+  override: ""
+
+# -- Resource requests and limits
+resources:
+  requests:
+    cpu: 100m
+    memory: 256Mi
+  limits:
+    cpu: 500m
+    memory: 512Mi
+
+# -- Liveness and readiness probe (health_check extension port)
+probes:
+  liveness:
+    initialDelaySeconds: 15
+    periodSeconds: 20
+  readiness:
+    initialDelaySeconds: 5
+    periodSeconds: 10
+healthCheckPort: 13133
+
+# -- Service
+service:
+  type: ClusterIP
+
+# -- ServiceAccount
+serviceAccount:
+  create: true
+  name: null
+  annotations: {}
+
+# -- Pod annotations and labels
+podAnnotations: {}
+podLabels: {}
+
+# -- Node selector, tolerations, affinity
+nodeSelector: {}
+tolerations: []
+affinity: {}

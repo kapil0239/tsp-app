@@ -15,7 +15,7 @@ app.use(cors({
 }));
 
 // OTLP proxy must get raw body (protobuf or JSON); mount before express.json()
-const OTEL_COLLECTOR_URL = process.env.OTEL_COLLECTOR_URL || 'http://otel.monitoring.svc.cluster.local:4318';
+const OTEL_COLLECTOR_URL = process.env.OTEL_COLLECTOR_URL || 'http://otel-collector.monitoring.svc.cluster.local:4318';
 app.use('/api/otel', express.raw({ type: () => true, limit: '5mb' }), (req, res) => {
   const path = req.path === '/' ? '' : req.path;
   const target = `${OTEL_COLLECTOR_URL}${path}`;

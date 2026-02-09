@@ -1,6 +1,6 @@
 # Kubernetes Manifests
 
-Deploy backend API to AKS.
+Deploy backend API to AKS. The backend is instrumented with OpenTelemetry and sends traces to the OTLP collector (e.g. `otel` in `monitoring` namespace). Ensure the collector is deployed and `OTEL_EXPORTER_OTLP_ENDPOINT` in `configmap.yaml` matches your collector service.
 
 ## Quick Deploy
 ```bash

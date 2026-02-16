@@ -47,11 +47,17 @@ tempo:
   reportingEnabled: true
   metricsGenerator:
     # -- If true, enables Tempo's metrics generator (https://grafana.com/docs/tempo/next/metrics-generator/)
-    enabled: false
+    enabled: true
     remoteWriteUrl: "http://prometheus.monitoring:9090/api/v1/write"
     # -- Processor-specific configuration for metrics generator (optional)
     # Supports service_graphs, span_metrics, and local_blocks processors
     processor: {}
+     span_metrics:
+       dimensions:
+         - service
+         - span_name
+         - status_code
+     service_graphs: {}
     #   local_blocks:
     #     flush_to_storage: true
     #     filter_server_spans: false
@@ -70,7 +76,7 @@ tempo:
     # This section configures the storage path and remote write endpoints
     storage:
       # -- Path for storing metrics blocks. Defaults to /tmp/tempo for backward compatibility, but /var/tempo/metrics is recommended for production with persistent storage
-      path: "/tmp/tempo"
+      path: "/var/tempo"
       # -- Optional remote write configuration (will use remoteWriteUrl if not specified)
       # Supports full Prometheus remote_write config: https://prometheus.io/docs/prometheus/latest/configuration/configuration/#remote_write
       remote_write: []
@@ -78,7 +84,7 @@ tempo:
     # This configures the Write Ahead Log for traces used by the metrics generator
     traces_storage:
       # -- Path for traces storage WAL used by metrics generator
-      path: "/tmp/traces"
+      path: "/var/traces"
   # -- Configuration options for the ingester.
   # Refers to: https://grafana.com/docs/tempo/latest/configuration/#ingester
   ingester: {}
